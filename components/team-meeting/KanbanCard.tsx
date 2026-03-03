@@ -1,6 +1,6 @@
 'use client'
 
-import { Archive, Circle, PlayCircle, Eye, CheckCircle2, Lock, User } from 'lucide-react'
+import { Archive, Circle, PlayCircle, Eye, CheckCircle2, Lock, User, FileText } from 'lucide-react'
 import type { TaskWithDeps, TaskStatus } from '@/types/task'
 
 interface KanbanCardProps {
@@ -60,6 +60,10 @@ export default function KanbanCard({ task, onSelect }: KanbanCardProps) {
         )}
 
         <div className="flex-1" />
+
+        {task.result && (task.status === 'review' || task.status === 'completed') && (
+          <FileText className="w-3 h-3 text-emerald-500/70 flex-shrink-0" title="Has result" />
+        )}
 
         {task.blockedBy.length > 0 && (
           <span className="text-[10px] text-amber-500/70 flex-shrink-0">

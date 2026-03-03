@@ -12,6 +12,7 @@ export interface Task {
   teamId: string                 // Team this task belongs to
   subject: string                // "Implement user auth endpoint"
   description?: string           // Detailed description / acceptance criteria
+  result?: string                // Outcome / what was done (filled during review/completed)
   status: TaskStatus
   assigneeAgentId?: string | null
   blockedBy: string[]            // Task IDs that must complete first

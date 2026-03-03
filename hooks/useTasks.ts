@@ -13,7 +13,7 @@ interface UseTasksResult {
   tasksByStatus: Record<TaskStatus, TaskWithDeps[]>
   tasksByAgent: Record<string, TaskWithDeps[]>
   createTask: (data: { subject: string; description?: string; assigneeAgentId?: string; blockedBy?: string[]; priority?: number }) => Promise<void>
-  updateTask: (taskId: string, updates: { subject?: string; description?: string; status?: TaskStatus; assigneeAgentId?: string | null; blockedBy?: string[]; priority?: number }) => Promise<{ unblocked: TaskWithDeps[] }>
+  updateTask: (taskId: string, updates: { subject?: string; description?: string; result?: string; status?: TaskStatus; assigneeAgentId?: string | null; blockedBy?: string[]; priority?: number }) => Promise<{ unblocked: TaskWithDeps[] }>
   deleteTask: (taskId: string) => Promise<void>
   assignTask: (taskId: string, agentId: string | null) => Promise<void>
   refreshTasks: () => Promise<void>
@@ -68,7 +68,7 @@ export function useTasks(teamId: string | null): UseTasksResult {
     await fetchTasks()
   }, [teamId, fetchTasks])
 
-  const updateTask = useCallback(async (taskId: string, updates: { subject?: string; description?: string; status?: TaskStatus; assigneeAgentId?: string | null; blockedBy?: string[]; priority?: number }) => {
+  const updateTask = useCallback(async (taskId: string, updates: { subject?: string; description?: string; result?: string; status?: TaskStatus; assigneeAgentId?: string | null; blockedBy?: string[]; priority?: number }) => {
     if (!teamId) return { unblocked: [] as TaskWithDeps[] }
     // Optimistic update
     setTasks(prev => prev.map(t => t.id === taskId ? { ...t, ...updates, updatedAt: new Date().toISOString() } : t))

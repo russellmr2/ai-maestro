@@ -129,7 +129,7 @@ export function getTask(teamId: string, taskId: string): Task | null {
 export function updateTask(
   teamId: string,
   taskId: string,
-  updates: Partial<Pick<Task, 'subject' | 'description' | 'status' | 'assigneeAgentId' | 'blockedBy' | 'priority'>>
+  updates: Partial<Pick<Task, 'subject' | 'description' | 'result' | 'status' | 'assigneeAgentId' | 'blockedBy' | 'priority'>>
 ): { task: Task | null; unblocked: Task[] } {
   const tasks = loadTasks(teamId)
   const index = tasks.findIndex(t => t.id === taskId)
@@ -139,9 +139,14 @@ export function updateTask(
   const wasCompleted = tasks[index].status === 'completed'
   const isNowCompleted = updates.status === 'completed'
 
+  // Strip undefined values to prevent overwriting existing fields
+  const cleanUpdates = Object.fromEntries(
+    Object.entries(updates).filter(([_, v]) => v !== undefined)
+  )
+
   tasks[index] = {
     ...tasks[index],
-    ...updates,
+    ...cleanUpdates,
     updatedAt: now,
   }
 

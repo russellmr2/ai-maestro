@@ -66,6 +66,7 @@ export interface CreateTaskParams {
 export interface UpdateTaskParams {
   subject?: string
   description?: string
+  result?: string
   status?: TaskStatus
   assigneeAgentId?: string
   blockedBy?: string[]
@@ -245,7 +246,7 @@ export function updateTeamTask(
     return { error: 'Task not found', status: 404 }
   }
 
-  const { subject, description, status, assigneeAgentId, blockedBy, priority } = params
+  const { subject, description, result, status, assigneeAgentId, blockedBy, priority } = params
 
   // Validate blockedBy to prevent circular dependencies
   if (Array.isArray(blockedBy)) {
@@ -268,20 +269,23 @@ export function updateTeamTask(
   }
 
   try {
-    const result = updateTask(teamId, taskId, {
-      subject,
-      description,
-      status,
-      assigneeAgentId,
-      blockedBy,
-      priority,
-    })
+    // Only pass fields that were explicitly provided to avoid overwriting with undefined
+    const updates: Record<string, any> = {}
+    if (subject !== undefined) updates.subject = subject
+    if (description !== undefined) updates.description = description
+    if (result !== undefined) updates.result = result
+    if (status !== undefined) updates.status = status
+    if (assigneeAgentId !== undefined) updates.assigneeAgentId = assigneeAgentId
+    if (blockedBy !== undefined) updates.blockedBy = blockedBy
+    if (priority !== undefined) updates.priority = priority
 
-    if (!result.task) {
+    const updateResult = updateTask(teamId, taskId, updates)
+
+    if (!updateResult.task) {
       return { error: 'Task not found', status: 404 }
     }
 
-    return { data: { task: result.task, unblocked: result.unblocked }, status: 200 }
+    return { data: { task: updateResult.task, unblocked: updateResult.unblocked }, status: 200 }
   } catch (error) {
     console.error('Failed to update task:', error)
     return { error: error instanceof Error ? error.message : 'Failed to update task', status: 500 }

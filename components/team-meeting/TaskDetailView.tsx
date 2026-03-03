@@ -10,7 +10,7 @@ interface TaskDetailViewProps {
   task: TaskWithDeps
   agents: Agent[]
   allTasks: TaskWithDeps[]
-  onUpdate: (taskId: string, updates: { subject?: string; description?: string; status?: TaskStatus; assigneeAgentId?: string | null; blockedBy?: string[] }) => Promise<void>
+  onUpdate: (taskId: string, updates: { subject?: string; description?: string; result?: string; status?: TaskStatus; assigneeAgentId?: string | null; blockedBy?: string[] }) => Promise<void>
   onDelete: (taskId: string) => Promise<void>
   onClose: () => void
 }
@@ -18,6 +18,7 @@ interface TaskDetailViewProps {
 export default function TaskDetailView({ task, agents, allTasks, onUpdate, onDelete, onClose }: TaskDetailViewProps) {
   const [subject, setSubject] = useState(task.subject)
   const [description, setDescription] = useState(task.description || '')
+  const [result, setResult] = useState(task.result || '')
   const [assigneeAgentId, setAssigneeAgentId] = useState(task.assigneeAgentId || '')
   const [blockedBy, setBlockedBy] = useState<string[]>(task.blockedBy)
   const [saving, setSaving] = useState(false)
@@ -27,9 +28,10 @@ export default function TaskDetailView({ task, agents, allTasks, onUpdate, onDel
   useEffect(() => {
     setSubject(task.subject)
     setDescription(task.description || '')
+    setResult(task.result || '')
     setAssigneeAgentId(task.assigneeAgentId || '')
     setBlockedBy(task.blockedBy)
-  }, [task.id, task.subject, task.description, task.assigneeAgentId, task.blockedBy])
+  }, [task.id, task.subject, task.description, task.result, task.assigneeAgentId, task.blockedBy])
 
   const handleSave = async () => {
     setSaving(true)
@@ -37,6 +39,7 @@ export default function TaskDetailView({ task, agents, allTasks, onUpdate, onDel
       await onUpdate(task.id, {
         subject: subject.trim(),
         description: description.trim() || undefined,
+        result: result.trim() || undefined,
         assigneeAgentId: assigneeAgentId || null,
         blockedBy,
       })
@@ -61,6 +64,7 @@ export default function TaskDetailView({ task, agents, allTasks, onUpdate, onDel
 
   const hasChanges = subject !== task.subject
     || description !== (task.description || '')
+    || result !== (task.result || '')
     || assigneeAgentId !== (task.assigneeAgentId || '')
     || JSON.stringify(blockedBy) !== JSON.stringify(task.blockedBy)
 
@@ -124,10 +128,27 @@ export default function TaskDetailView({ task, agents, allTasks, onUpdate, onDel
             value={description}
             onChange={e => setDescription(e.target.value)}
             placeholder="Add description..."
-            rows={3}
-            className="w-full text-[11px] bg-gray-800/50 text-gray-300 placeholder-gray-600 rounded px-2 py-1.5 mt-1 resize-none focus:outline-none focus:ring-1 focus:ring-gray-600"
+            rows={6}
+            className="w-full text-[11px] bg-gray-800/50 text-gray-300 placeholder-gray-600 rounded px-2 py-1.5 mt-1 resize-y min-h-[72px] max-h-[240px] focus:outline-none focus:ring-1 focus:ring-gray-600"
           />
         </div>
+
+        {/* Result / Outcome — editable in review or completed */}
+        {(task.status === 'review' || task.status === 'completed' || result) && (
+          <div>
+            <label className="text-[10px] text-gray-500 uppercase tracking-wider">Result / Outcome</label>
+            <textarea
+              value={result}
+              onChange={e => setResult(e.target.value)}
+              placeholder="What was done..."
+              rows={4}
+              readOnly={task.status !== 'review' && task.status !== 'completed'}
+              className={`w-full text-[11px] bg-gray-800/50 text-gray-300 placeholder-gray-600 rounded px-2 py-1.5 mt-1 resize-y min-h-[56px] max-h-[200px] focus:outline-none focus:ring-1 focus:ring-gray-600 ${
+                task.status !== 'review' && task.status !== 'completed' ? 'opacity-60 cursor-default' : ''
+              }`}
+            />
+          </div>
+        )}
 
         {/* Assignee */}
         <div>
