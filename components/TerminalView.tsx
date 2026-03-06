@@ -229,8 +229,14 @@ export default function TerminalView({ session, isVisible = true, hideFooter = f
 
               // 3. Scroll to bottom and focus
               setTimeout(() => {
-                term.scrollToBottom()
-                term.focus()
+                try {
+                  if (terminalInstanceRef.current) {
+                    terminalInstanceRef.current.scrollToBottom()
+                    terminalInstanceRef.current.focus()
+                  }
+                } catch {
+                  // Terminal may have been disposed between setTimeout scheduling and execution
+                }
               }, 50)
             }, 100)
           }

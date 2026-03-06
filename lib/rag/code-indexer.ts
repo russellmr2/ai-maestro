@@ -18,6 +18,27 @@ export { detectProjectType, getProjectInfo, type ProjectInfo, type ProjectType }
 // Use the unified type for both parser outputs
 type ParsedFile = AnyParsedFile
 
+// Default exclude patterns — always applied to prevent indexing node_modules etc.
+const DEFAULT_EXCLUDES = [
+  'node_modules/**',
+  '.next/**',
+  '.nuxt/**',
+  'dist/**',
+  'build/**',
+  '.git/**',
+  'coverage/**',
+  '**/*.d.ts',
+  '**/*.min.js',
+  '**/vendor/**',
+  'android/**',
+  'ios/**',
+  '.expo/**',
+  '__mocks__/**',
+  '__pycache__/**',
+  'venv/**',
+  '.venv/**',
+]
+
 export interface IndexStats {
   filesIndexed: number
   functionsIndexed: number
@@ -315,9 +336,12 @@ export async function indexProject(
   // Parse project using unified parser
   if (options.onProgress) options.onProgress('Parsing project files...')
 
+  // Merge caller excludes with defaults — node_modules etc. are ALWAYS excluded
+  const effectiveExcludes = [...new Set([...DEFAULT_EXCLUDES, ...(options.excludePatterns || [])])]
+
   const { files: parsedFiles } = await parseProjectUnified(projectPath, {
     includePatterns: options.includePatterns,
-    excludePatterns: options.excludePatterns,
+    excludePatterns: effectiveExcludes,
     onProgress: (filePath, index, total) => {
       if (options.onProgress && index % 10 === 0) {
         options.onProgress(`Parsing: ${index}/${total} files (${filePath})`)
@@ -759,9 +783,13 @@ export async function indexProjectDelta(
 
   // Scan for all current files in project
   if (options.onProgress) options.onProgress('Scanning project files...')
+
+  // Merge caller excludes with defaults — node_modules etc. are ALWAYS excluded
+  const effectiveExcludes = [...new Set([...DEFAULT_EXCLUDES, ...(options.excludePatterns || [])])]
+
   const { files: allParsedFiles } = await parseProjectUnified(projectPath, {
     includePatterns: options.includePatterns,
-    excludePatterns: options.excludePatterns,
+    excludePatterns: effectiveExcludes,
     onProgress: (filePath, index, total) => {
       if (options.onProgress && index % 50 === 0) {
         options.onProgress(`Scanning: ${index}/${total} files`)

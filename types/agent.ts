@@ -213,6 +213,9 @@ export interface Agent {
   // Skills (composable capabilities)
   skills?: AgentSkillsConfig
 
+  // Personality file (auto-loaded after wake)
+  personalityFile?: string        // Path to personality .md file (relative to workingDirectory)
+
   // Hooks (event-triggered scripts)
   hooks?: Record<string, string>  // event -> script path
 
@@ -468,6 +471,7 @@ export interface UpdateAgentRequest {
   model?: string
   taskDescription?: string
   programArgs?: string          // CLI arguments passed to the program on launch
+  personalityFile?: string      // Path to personality .md file (relative to workingDirectory)
   tags?: string[]
   owner?: string
   role?: AgentRole              // Update messaging role

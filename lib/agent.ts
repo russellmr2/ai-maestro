@@ -1158,7 +1158,7 @@ declare global {
 }
 
 if (!globalThis._agentRegistry) {
-  globalThis._agentRegistry = new AgentRegistry()
+  globalThis._agentRegistry = new AgentRegistry(16)
 }
 
 export const agentRegistry = globalThis._agentRegistry

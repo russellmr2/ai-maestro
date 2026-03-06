@@ -271,11 +271,25 @@ export async function parseProject(
     })
   }
 
-  // Apply exclude patterns
-  if (options.excludePatterns && options.excludePatterns.length > 0) {
+  // Apply exclude patterns — always include defaults to prevent indexing node_modules etc.
+  const DEFAULT_EXCLUDES = [
+    'node_modules/**',
+    '.next/**',
+    '.nuxt/**',
+    'dist/**',
+    'build/**',
+    '.git/**',
+    'coverage/**',
+    '**/*.d.ts',
+    '**/*.min.js',
+    '**/vendor/**',
+  ]
+  const effectiveExcludes = [...new Set([...DEFAULT_EXCLUDES, ...(options.excludePatterns || [])])]
+
+  if (effectiveExcludes.length > 0) {
     sourceFiles = sourceFiles.filter((sf) => {
       const relativePath = path.relative(projectPath, sf.getFilePath())
-      return !options.excludePatterns!.some((pattern) => {
+      return !effectiveExcludes.some((pattern) => {
         const regex = new RegExp(
           '^' + pattern.replace(/\*\*/g, '.*').replace(/\*/g, '[^/]*') + '$'
         )

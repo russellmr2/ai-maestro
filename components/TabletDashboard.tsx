@@ -210,7 +210,7 @@ export default function TabletDashboard({
 
                 {/* Terminal (always mounted, visibility toggled) */}
                 <div
-                  className="absolute inset-0"
+                  className="absolute inset-0 flex flex-col"
                   style={{
                     visibility: viewMode === 'terminal' ? 'visible' : 'hidden',
                     pointerEvents: viewMode === 'terminal' ? 'auto' : 'none'
@@ -250,7 +250,7 @@ export default function TabletDashboard({
           {activeTab === 'messages' && activeAgent && (() => {
             const session = agentToSession(activeAgent)
             return (
-              <div className="absolute inset-0">
+              <div className="absolute inset-0 flex flex-col">
                 <MobileMessageCenter
                   sessionName={session.id}
                   agentId={activeAgent.id}
@@ -269,7 +269,7 @@ export default function TabletDashboard({
 
           {/* Work tab */}
           {activeTab === 'work' && activeAgent && (
-            <div className="absolute inset-0">
+            <div className="absolute inset-0 flex flex-col">
               <MobileWorkTree
                 sessionName={activeAgent.session?.tmuxSessionName || activeAgent.id}
                 agentId={activeAgent.id}

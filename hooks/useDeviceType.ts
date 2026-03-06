@@ -22,10 +22,8 @@ function detectTouch(): boolean {
 
 function classify(width: number, isTouch: boolean): DeviceType {
   if (width < 768) return 'phone'
-  // Touch devices at any width >= 768 get tablet experience
-  // Non-touch devices between 768-1023 also get tablet (small laptop screens are fine with it)
-  if (isTouch) return 'tablet'
   if (width < 1024) return 'tablet'
+  // Wide screens always get desktop, even with touch (detachable laptops, touch monitors)
   return 'desktop'
 }
 

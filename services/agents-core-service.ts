@@ -177,7 +177,7 @@ function isSessionIdle(sessionName: string): boolean {
 
 /** Sanitize shell arguments: only allow safe CLI flag characters */
 function sanitizeArgs(args: string): string {
-  return args.replace(/[^a-zA-Z0-9\s\-_.=/:,~@]/g, '').trim()
+  return args.replace(/[^a-zA-Z0-9\s\-_.=/:,~@()*'"]/g, '').trim()
 }
 
 /** Resolve program name to CLI command */
@@ -389,6 +389,38 @@ function updateAgentSessionInRegistry(
   }
 
   saveAgents(agents)
+}
+
+/**
+ * Background personality loader — waits for Claude Code to be ready,
+ * then sends the personality file read command.
+ * Fire-and-forget: does NOT block wakeAgent().
+ */
+async function loadPersonalityAfterReady(
+  sessionName: string,
+  personalityFile: string
+): Promise<void> {
+  const runtime = getRuntime()
+  const maxWait = 90_000
+  const interval = 3_000
+  let waited = 0
+
+  while (waited < maxWait) {
+    try {
+      const paneContent = await runtime.capturePane(sessionName, 50)
+      if (paneContent.includes('bypass permissions') || paneContent.includes('for shortcuts')) {
+        const command = `Read ${personalityFile} — this is your permanent identity. Adopt this personality fully for all future interactions. Introduce yourself in character.`
+        await runtime.sendKeys(sessionName, command, { literal: true, enter: true })
+        console.log(`[Wake] Personality loaded for ${sessionName}: ${personalityFile}`)
+        return
+      }
+    } catch {
+      // Session might not be fully initialized yet
+    }
+    await new Promise(resolve => setTimeout(resolve, interval))
+    waited += interval
+  }
+  console.warn(`[Wake] Timeout waiting for Claude Code in ${sessionName} — personality not loaded`)
 }
 
 // ===========================================================================
@@ -1350,6 +1382,12 @@ export async function wakeAgent(agentId: string, params: WakeAgentParams): Promi
         } catch (error) {
           console.error(`[Wake] Failed to start program:`, error)
         }
+      }
+
+      // Auto-reload personality file if configured (fire-and-forget)
+      if (agent.personalityFile) {
+        loadPersonalityAfterReady(sessionName, agent.personalityFile)
+          .catch(err => console.error(`[Wake] Personality load error for ${sessionName}:`, err))
       }
     }
 
