@@ -182,7 +182,7 @@ export class TmuxRuntime implements AgentRuntime {
       if (enter) {
         await execAsync(`tmux send-keys -t "${name}" -l '${escaped}'`)
         await new Promise(resolve => setTimeout(resolve, 1000))
-        await execAsync(`tmux send-keys -t "${name}" Enter`)
+        await execAsync(`tmux send-keys -t "${name}" C-m`)
       } else {
         await execAsync(`tmux send-keys -t "${name}" -l '${escaped}'`)
       }
@@ -191,7 +191,7 @@ export class TmuxRuntime implements AgentRuntime {
       if (enter) {
         await execAsync(`tmux send-keys -t "${name}" ${keys}`)
         await new Promise(resolve => setTimeout(resolve, 1000))
-        await execAsync(`tmux send-keys -t "${name}" Enter`)
+        await execAsync(`tmux send-keys -t "${name}" C-m`)
       } else {
         await execAsync(`tmux send-keys -t "${name}" ${keys}`)
       }

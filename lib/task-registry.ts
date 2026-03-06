@@ -139,9 +139,9 @@ export function updateTask(
   const wasCompleted = tasks[index].status === 'completed'
   const isNowCompleted = updates.status === 'completed'
 
-  // Strip undefined values to prevent overwriting existing fields
+  // Filter out undefined values to prevent overwriting existing fields
   const cleanUpdates = Object.fromEntries(
-    Object.entries(updates).filter(([_, v]) => v !== undefined)
+    Object.entries(updates).filter(([, v]) => v !== undefined)
   )
 
   tasks[index] = {
